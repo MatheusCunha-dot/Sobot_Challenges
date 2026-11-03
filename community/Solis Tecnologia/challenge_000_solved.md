@@ -1,7 +1,8 @@
-Institution: Solis Tecnologia
+Institution: Senai
 
 Participants:
--Rodrigo Lima de Carvalho
+-Matheus Virgilio Cunha
+-Adryan Bogea
 
-Location: São Paulo, SP
-Date: 12/10/2024
+Location: Imperatriz, MA
+Date: 03/11/2026
