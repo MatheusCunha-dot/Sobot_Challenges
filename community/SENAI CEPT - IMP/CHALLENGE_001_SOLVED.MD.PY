@@ -13,7 +13,7 @@ s.write(b"MT0 E1")
 
 
 set_led(0, 255, 0)
-s.write(b"MT0 D1000 AT500 DT500 V10")
+s.write(b"MT0 D500 AT500 DT500 V10")
 
 
 set_led(0, 0, 255)
@@ -21,7 +21,7 @@ s.write(b"MT0 D90 L AT500 DT500 V10")
 
 
 set_led(0, 255, 0)
-s.write(b"MT0 D1000 AT500 DT500 V10")
+s.write(b"MT0 D500 AT500 DT500 V10")
 
 
 set_led(255, 255, 0)
@@ -29,11 +29,11 @@ s.write(b"MT0 D90 R AT500 DT500 V10")
 
 
 set_led(0, 255, 0)
-s.write(b"MT0 D1000 AT500 DT500 V10")
+s.write(b"MT0 D500 AT500 DT500 V10")
 
 
 set_led(255, 0, 0)
-s.write(b"MT0 D-1000 AT500 DT500 V10")
+s.write(b"MT0 D-500 AT500 DT500 V10")
 
 
 set_led(255, 255, 0)
@@ -41,7 +41,7 @@ s.write(b"MT0 D90 R AT500 DT500 V10")
 
 
 set_led(0, 255, 0)
-s.write(b"MT0 D1000 AT500 DT500 V10")
+s.write(b"MT0 D500 AT500 DT500 V10")
 
 
 set_led(255, 255, 0)
@@ -49,7 +49,7 @@ s.write(b"MT0 D90 R AT500 DT500 V10")
 
 
 set_led(0, 255, 0)
-s.write(b"MT0 D1000 AT500 DT500 V10")
+s.write(b"MT0 D500 AT500 DT500 V10")
 
 
 set_led(255, 255, 0)
