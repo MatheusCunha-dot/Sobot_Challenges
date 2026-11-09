@@ -1,7 +1,7 @@
 import serial
 from time import sleep
 
-s = serial.Serial('/dev/ttyACM0', 9600, Ttimeout=0, dsrdtr=False)
+s = serial.Serial('/dev/ttyACM0', 9600, timeout=0, dsrdtr=False)
 
 def set_led(r, g, b):
     s.write(f"LT E1 RD{r} GR{g} BL{b}".encode())
