@@ -1,9 +1,9 @@
 import time
 import serial
 
-# Configuração da porta serial USB (ajuste '/dev/ttyUSB0' ou 'COM3' conforme a porta do seu sistema)
+# Configuração da porta serial USB (ajuste '/dev/ttyACM0' ou 'COM3' conforme a porta do seu sistema)
 # O SoBot utiliza padrão de transmissão serial via USB.
-ser = serial.Serial("/dev/ttyUSB0", 9600, timeout=1)
+ser = serial.Serial("/dev/ttyACM0", 9600, timeout=1)
 time.sleep(2)  # Aguarda a inicialização da conexão serial
 
 
