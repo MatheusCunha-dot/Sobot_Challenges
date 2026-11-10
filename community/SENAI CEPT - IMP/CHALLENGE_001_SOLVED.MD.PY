@@ -1,187 +1,101 @@
+import time
 import serial
-from time import sleep
 
-s = serial.Serial('/dev/ttyUSB0', 9600)
+# Configuração da porta serial USB (ajuste '/dev/ttyUSB0' ou 'COM3' conforme a porta do seu sistema)
+# O SoBot utiliza padrão de transmissão serial via USB.
+ser = serial.Serial("/dev/ttyUSB0", 9600, timeout=1)
+time.sleep(2)  # Aguarda a inicialização da conexão serial
 
-def set_led(r, g, b):
-    s.write(f"LT E1 RD{r} GR{g} BL{b}".encode())
 
-def pause(seconds):
-    sleep(seconds)
+def enviar_comando(comando):
+    """Envia o comando formatado em bytes para o SoBot via serial."""
+    ser.write(comando.encode("ascii"))
+    time.sleep(0.1)
 
-# LEVEL 1: BASIC (Fixed Commands Mode)
-s.write(b"MT0 E1")
 
-# 1. Forward | Green
-set_led(0, 255, 0)
-s.write(b"MT0 D500 AT500 DT500 V10")
+def definir_cor_led(red, green, blue):
+    """Configura a cor da fita de LED RGB do SoBot.
 
-# 2. Left | Blue
-set_led(0, 0, 255)
-s.write(b"MT0 D90 L AT500 DT500 V10")
+    Cores (0 a 255):
+    - Green (Verde): red=0, green=255, blue=0
+    - Blue (Azul): red=0, green=0, blue=255
+    - Yellow (Amarelo): red=255, green=255, blue=0
+    - Red (Vermelho): red=255, green=0, blue=0
+    """
+    cmd = f"LT E1 RD{red} GR{green} BL{blue}"
+    enviar_comando(cmd)
 
-# 3. Forward | Green
-set_led(0, 255, 0)
-s.write(b"MT0 D500 AT500 DT500 V10")
 
-# 4. Right | Yellow
-set_led(255, 255, 0)
-s.write(b"MT0 D90 R AT500 DT500 V10")
+# --- INÍCIO DA EXECUÇÃO DO DESAFIO ---
 
-# 5. Forward | Green
-set_led(0, 255, 0)
-s.write(b"MT0 D500 AT500 DT500 V10")
+# Habilita os motores principais (MOTOR 01 e MOTOR 02 simultâneos)
+enviar_comando("MT0 E1")
 
-# 6. Backward | Red
-set_led(255, 0, 0)
-s.write(b"MT0 D500 AT500 DT500 V10")
+# Definição dos parâmetros padrão de movimento (distância/ângulo, rampa e velocidade)
+# Distância padrão: 500mm (50cm) | Aceleração: 1000ms | Desaceleração: 1000ms | Velocidade: 10cm/s
+AT = 1000
+DT = 1000
+V = 10
+DIST_MOV = 500  # Distância retilínea em mm
+ANG_CURVA = 90  # Ângulo de curva no próprio eixo em graus
 
-# 7. Left | Blue
-set_led(0, 0, 255)
-s.write(b"MT0 D90 L AT500 DT500 V10")
+# 1. Forward - Green
+definir_cor_led(0, 255, 0)
+enviar_comando(f"MT0 D500 AT500 DT500 V10")
+enviar_comando("DL2000")  # Aguarda execução do movimento
 
-# 8. Forward | Green
-set_led(0, 255, 0)
-s.write(b"MT0 D500 AT500 DT500 V10")
+# 2. Left - Blue
+definir_cor_led(0, 0, 255)
+enviar_comando(f"MT0 D90 L AT500 DT500 V10")
+enviar_comando("DL2000")
 
-# 9. Right | Yellow
-set_led(255, 255, 0)
-s.write(b"MT0 D90 R AT500 DT500 V10")
+# 3. Forward - Green
+definir_cor_led(0, 255, 0)
+enviar_comando(f"MT0 D500 AT500 DT500 V10")
+enviar_comando("DL2000")
 
-# 10. Forward | Green
-set_led(0, 255, 0)
-s.write(b"MT0 D500 AT500 DT500 V10")
+# 4. Right - Yellow
+definir_cor_led(255, 255, 0)
+enviar_comando(f"MT0 D90 R AT500 DT500 V10")
+enviar_comando("DL2000")
 
-# 11. Right | Yellow
-set_led(255, 255, 0)
-s.write(b"MT0 D90 R AT500 DT500 V10")
+# 5. Forward - Green
+definir_cor_led(0, 255, 0)
+enviar_comando(f"MT0 D500 AT500 DT500 V10")
+enviar_comando("DL2000")
 
-s.write(b"MT0 E0")
-s.write(b"LT E0")
-pause(2)
+# 6. Backward - Red (Movimento em ré utiliza sinal negativo na distância)
+definir_cor_led(255, 0, 0)
+enviar_comando(f"MT0 D-1000 AT500 DT500 V10")
+enviar_comando("DL2000")
 
-# LEVEL 2: INTERMEDIATE (Continuous Movement Mode)
-s.write(b"MT0 ME1")
-s.write(b"MT0 MC MD1 RI100 AT100 DT100 V10")
+# 7. Right - Yellow
+definir_cor_led(255, 255, 0)
+enviar_comando(f"MT0 D90 R AT500 DT500 V10")
+enviar_comando("DL2000")
 
-# 1. Forward | Green
-set_led(0, 255, 0)
-s.write(b"MT0 MF")
-pause(3)
+# 8. Forward - Green
+definir_cor_led(0, 255, 0)
+enviar_comando(f"MT0 D500 AT500 DT500 V10")
+enviar_comando("DL2000")
 
-# 2. Left | Blue
-set_led(0, 0, 255)
-s.write(b"MT0 ML")
-pause(1.5)
+# 9. Right - Yellow
+definir_cor_led(255, 255, 0)
+enviar_comando(f"MT0 D90 R AT500 DT500 V10")
+enviar_comando("DL2000")
 
-# 3. Forward | Green
-set_led(0, 255, 0)
-s.write(b"MT0 MF")
-pause(3)
+# 10. Forward - Green
+definir_cor_led(0, 255, 0)
+enviar_comando(f"MT0 D500 AT500 DT500 V10")
+enviar_comando("DL2000")
 
-# 4. Right | Yellow
-set_led(255, 255, 0)
-s.write(b"MT0 MR")
-pause(1.5)
+# 11. Right - Yellow
+definir_cor_led(255, 255, 0)
+enviar_comando(f"MT0 D90 R AT500 DT500 V10")
+enviar_comando("DL2000")
 
-# 5. Forward | Green
-set_led(0, 255, 0)
-s.write(b"MT0 MF")
-pause(3)
+# Finalização: Desliga fita LED e desabilita os motores
+enviar_comando("LT E0")
+enviar_comando("MT0 E0")
 
-# 6. Backward | Red
-set_led(255, 0, 0)
-s.write(b"MT0 MB")
-pause(3)
-
-# 7. Left | Blue
-set_led(0, 0, 255)
-s.write(b"MT0 ML")
-pause(1.5)
-
-# 8. Forward | Green
-set_led(0, 255, 0)
-s.write(b"MT0 MF")
-pause(3)
-
-# 9. Right | Yellow
-set_led(255, 255, 0)
-s.write(b"MT0 MR")
-pause(1.5)
-
-# 10. Forward | Green
-set_led(0, 255, 0)
-s.write(b"MT0 MF")
-pause(3)
-
-# 11. Right | Yellow
-set_led(255, 255, 0)
-s.write(b"MT0 MR")
-pause(1.5)
-
-s.write(b"MT0 MP")
-s.write(b"MT0 ME0")
-s.write(b"LT E0")
-pause(2)
-
-# LEVEL 3: ADVANCED (Pulses-Per-Second Mode)
-def stop_motors():
-    s.write(b"MT1 E0 MT2 E0")
-
-# 1. Forward | Green
-set_led(0, 255, 0)
-s.write(b"MT1 E1 PS500 MT2 E1 PS500")
-pause(3)
-
-# 2. Left | Blue
-set_led(0, 0, 255)
-s.write(b"MT1 E1 PS-500 MT2 E1 PS500")
-pause(1)
-
-# 3. Forward | Green
-set_led(0, 255, 0)
-s.write(b"MT1 E1 PS500 MT2 E1 PS500")
-pause(3)
-
-# 4. Right | Yellow
-set_led(255, 255, 0)
-s.write(b"MT1 E1 PS500 MT2 E1 PS-500")
-pause(1)
-
-# 5. Forward | Green
-set_led(0, 255, 0)
-s.write(b"MT1 E1 PS500 MT2 E1 PS500")
-pause(3)
-
-# 6. Backward | Red
-set_led(255, 0, 0)
-s.write(b"MT1 E1 PS-500 MT2 E1 PS-500")
-pause(3)
-
-# 7. Left | Blue
-set_led(0, 0, 255)
-s.write(b"MT1 E1 PS-500 MT2 E1 PS500")
-pause(1)
-
-# 8. Forward | Green
-set_led(0, 255, 0)
-s.write(b"MT1 E1 PS500 MT2 E1 PS500")
-pause(3)
-
-# 9. Right | Yellow
-set_led(255, 255, 0)
-s.write(b"MT1 E1 PS500 MT2 E1 PS-500")
-pause(1)
-
-# 10. Forward | Green
-set_led(0, 255, 0)
-s.write(b"MT1 E1 PS500 MT2 E1 PS500")
-pause(3)
-
-# 11. Right | Yellow
-set_led(255, 255, 0)
-s.write(b"MT1 E1 PS500 MT2 E1 PS-500")
-pause(1)
-
-stop_motors()
-s.write(b"LT E0")
+ser.close()
