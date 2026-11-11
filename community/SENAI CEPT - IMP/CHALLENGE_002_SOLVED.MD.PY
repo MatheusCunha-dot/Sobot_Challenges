@@ -1,108 +1,64 @@
 import time
 import serial
 
-# Conexão serial com a placa de controle do SoBot
-ser = serial.Serial("/dev/ttyACM0", 9600, timeout=1, dsrdtr=False)
-time.sleep(2)  # Aguarda inicialização
+# Configuração da comunicação serial USB com a placa do SoBot
+ser = serial.Serial("/dev/ttyUSB0", 9600, timeout=1,  dsrdtr=False)
+time.sleep(2)  # Tempo para estabilização da conexão serial
 
 
 def enviar_comando(comando):
-    """Envia o comando formatado em bytes para o SoBot via serial."""
+    """Envia a string de comando formatada para o SoBot."""
     ser.write(comando.encode("ascii"))
-    time.sleep(0.1)
+    time.sleep(0.5)
 
 
-def ler_sensores_linha():
-    """Lê os 3 sensores de linha (SL1, SL2, SL3).
+# --- CONFIGURAÇÃO E PARÂMETROS DO PERCURSO ---
+AT = 500  # Tempo de aceleração (ms)
+DT = 500  # Tempo de desaceleração (ms)
+V = 10  # Velocidade cruzeiro (cm/s)
 
-    Retorna uma tupla de inteiros (sl1, sl2, sl3).
-    - 0: Superfície reflexiva (Branco)
-    - 1: Linha preta detectada
-    """
-    ser.write(b"SL")
-    time.sleep(0.05)
-    resposta = ser.read_all().decode("ascii", errors="ignore")
+# Distâncias calculadas para a pista (em milímetros - ajuste conforme o tamanho real da sua mesa/pista)
+DIST_ATE_COLETA = 300  # Avanço inicial do Start até o Ponto de Coleta
+DIST_ENTRE_PONTOS = 800  # Avanço do Ponto de Coleta até o Ponto de Depósito
 
-    # Caso receba resposta válida (ex: "SL1 0 SL2 1 SL3 0")
-    if "SL1" in resposta:
-        partes = resposta.split()
-        try:
-            sl1 = int(partes[1])
-            sl2 = int(partes[3])
-            sl3 = int(partes[5])
-            return sl1, sl2, sl3
-        except (IndexError, ValueError):
-            pass
-    return 0, 0, 0
+# --- EXECUÇÃO DO DESAFIO (SEM SENSOR DE LINHA) ---
 
-
-def seguir_linha_ate_marca():
-    """Mantém o robô seguindo a linha no modo contínuo até encontrar
-
-    uma marcação lateral (SL1=1 ou SL3=1).
-    """
-    # Habilita motores no modo contínuo
-    enviar_comando("MT0 ME1")
-    enviar_comando("MT0 MC AT100 DT100 V5")
-
-    while True:
-        sl1, sl2, sl3 = ler_sensores_linha()
-
-        # Marca de parada detectada (sensor lateral sobre a fita)
-        if sl1 == 1 or sl3 == 1:
-            enviar_comando("MT0 MP")  # Pausa o movimento contínuo
-            time.sleep(0.2)
-            break
-
-        # Controle simples de seguidor de linha
-        if sl2 == 1:
-            enviar_comando("MT0 MF")  # Segue em frente
-        elif sl1 == 1:
-            enviar_comando("MT0 ML")  # Ajusta para esquerda
-        elif sl3 == 1:
-            enviar_comando("MT0 MR")  # Ajusta para direita
-        else:
-            enviar_comando("MT0 MF")
-
-        time.sleep(0.05)
-
-
-# --- FLUXO DO DESAFIO (SOBOT FORK LIFT) ---
-
-# 1. Habilita motores e garante garfo abaixado no início
+# 1. Habilita os motores principais (MT0) e garante elevador totalmente abaixado
 enviar_comando("MT0 E1")
 enviar_comando("EL DN")
-enviar_comando("DL3000")  # Aguarda descida do elevador
+enviar_comando("DL3000")  # Aguarda 3 segundos para conclusão da descida do garfo
 
-# 2. Navegação até a estação de coleta (Collect Point)
-seguir_linha_ate_marca()
+# 2. Avança do ponto inicial (Start) até o Ponto de Coleta (Collect Point)
+enviar_comando(f"MT0 D{DIST_ATE_COLETA} AT500 DT500 V15")
+enviar_comando("DL4500")
 
-# Coleta do Pallet: avança um pouco, sobe o elevador e recua
-enviar_comando("MT0 D100 AT500 DT500 V5")
-enviar_comando("DL2500")
+# 3. Coleta do Pallet: eleva o garfo do elevador
+enviar_comando("EL UP")
+enviar_comando("DL3500")  # Aguarda o elevador subir com a carga
 
-enviar_comando("EL UP")  # Eleva o pallet
-enviar_comando("DL4000")
+# 4. Giro de 180° sobre o próprio eixo (com o pallet elevado)
+enviar_comando(f"MT0 D180 R AT500 DT500 V15")
+enviar_comando("DL3500")  # Aguarda a curva de 180° completar
 
-# 3. Giro de 180 graus no próprio eixo
-enviar_comando("MT0 D180 R AT500 DT500 V10")
-enviar_comando("DL4000")
+# 5. Avança de ré/frente até a área de depósito (Deposit Point)
+# Como o robô girou 180°, ele avança de frente em direção ao ponto de depósito
+enviar_comando(f"MT0 D{DIST_ENTRE_PONTOS} AT500 DT500 V15")
+enviar_comando("DL9500")
 
-# 4. Navegação até o ponto de depósito (Deposit Point)
-seguir_linha_ate_marca()
+# 6. Depósito do Pallet: abaixa o elevador para deixar a carga no chão
+enviar_comando("EL DN")
+enviar_comando("DL3500")  # Aguarda a descida do elevador
 
-# Depósito do Pallet: abaixa o elevador e recua
-enviar_comando("EL DN")  # Deposta o pallet
-enviar_comando("DL4000")
-
-enviar_comando("MT0 D-150 AT500 DT500 V5")  # Recua para desengatar
+# 7. Recua ligeiramente para desengatar o garfo do pallet
+enviar_comando(f"MT0 D-150 AT500 DT500 V15")
 enviar_comando("DL3000")
 
-# 5. Giro de 180 graus e retorno à base inicial
-enviar_comando("MT0 D180 R AT500 DT500 V10")
-enviar_comando("DL4000")
+# 8. Giro de 180° para alinhar com o início e finalizar o ciclo
+enviar_comando(f"MT0 D180 R AT500 DT500 V15")
+enviar_comando("DL3500")
 
-# Finalização
+# Finalização: Interrompe acionamento do elevador e desabilita motores
 enviar_comando("EL ST")
 enviar_comando("MT0 E0")
+
 ser.close()
