@@ -2,7 +2,7 @@ import time
 import serial
 
 # Conexão serial com a placa de controle do SoBot
-ser = serial.Serial("/dev/ttyUSB0", 9600, timeout=1)
+ser = serial.Serial("/dev/ttyUSB0", 9600, timeout=1, dsrdtr=False)
 time.sleep(2)  # Aguarda inicialização
 
 
