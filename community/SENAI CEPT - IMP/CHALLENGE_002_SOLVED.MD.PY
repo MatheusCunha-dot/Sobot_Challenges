@@ -2,7 +2,7 @@ import time
 import serial
 
 # Configuração da comunicação serial USB com a placa do SoBot
-ser = serial.Serial("/dev/ttyUSB0", 9600, timeout=1,  dsrdtr=False)
+ser = serial.Serial("/dev/ttyACM0", 9600, timeout=1,  dsrdtr=False)
 time.sleep(2)  # Tempo para estabilização da conexão serial
 
 
