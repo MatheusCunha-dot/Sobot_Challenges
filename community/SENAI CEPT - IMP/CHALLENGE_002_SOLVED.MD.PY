@@ -29,7 +29,7 @@ enviar_comando("EL DN")
 enviar_comando("DL3000")  # Aguarda 3 segundos para conclusão da descida do garfo
 
 # 2. Avança do ponto inicial (Start) até o Ponto de Coleta (Collect Point)
-enviar_comando(f"MT0 D{DIST_ATE_COLETA} AT500 DT500 V15")
+enviar_comando(f"MT0 D500 AT500 DT500 V15")
 enviar_comando("DL4500")
 
 # 3. Coleta do Pallet: eleva o garfo do elevador
@@ -42,7 +42,7 @@ enviar_comando("DL3500")  # Aguarda a curva de 180° completar
 
 # 5. Avança de ré/frente até a área de depósito (Deposit Point)
 # Como o robô girou 180°, ele avança de frente em direção ao ponto de depósito
-enviar_comando(f"MT0 D{DIST_ENTRE_PONTOS} AT500 DT500 V15")
+enviar_comando(f"MT0 D500 AT500 DT500 V15")
 enviar_comando("DL9500")
 
 # 6. Depósito do Pallet: abaixa o elevador para deixar a carga no chão
